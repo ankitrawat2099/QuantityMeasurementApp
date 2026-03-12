@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using QuantityMeasurementApp.Model;
-using QuantityMeasurementApp.Exceptions;
+using QuantityMeasurementModelLayer.Exceptions;
+using QuantityMeasurementModelLayer.Enums;
 
 namespace QuantityMeasurementApp.Tests;
 // Unit tests for the QuantityLength class
