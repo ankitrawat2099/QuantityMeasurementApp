@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using QuantityMeasurementBusinessLayer.Interfaces;
 using QuantityMeasurementBusinessLayer.Services;
 using QuantityMeasurementRepositoryLayer.Interfaces;
@@ -12,32 +11,37 @@ class Program
     static void Main()
     {
         IConfiguration config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json")
             .Build();
 
-        bool useDatabase = config.GetValue<bool>("RepositorySettings:UseDatabase");
+        Console.WriteLine("===== Select Storage =====");
+        Console.WriteLine("1 Cache");
+        Console.WriteLine("2 Database");
+        Console.Write("Enter Choice: ");
 
-        var services = new ServiceCollection();
-        services.AddSingleton<IConfiguration>(config);
+        int choice = Convert.ToInt32(Console.ReadLine());
 
-        if (useDatabase)
+        IQuantityMeasurementRepository repository;
+
+        if (choice == 1)
         {
-            services.AddSingleton<IQuantityMeasurementRepository, QuantityMeasurementDatabaseRepository>();
+            repository = new QuantityMeasurementCacheRepository();
+        }
+        else if (choice == 2)
+        {
+            repository = new QuantityMeasurementDatabaseRepository(config);
         }
         else
         {
-            services.AddSingleton<IQuantityMeasurementRepository, QuantityMeasurementCacheRepository>();
+            Console.WriteLine("Invalid Choice");
+            return;
         }
 
-        services.AddScoped<IQuantityMeasurementService, QuantityMeasurementServiceImpl>();
+        IQuantityMeasurementService service =
+            new QuantityMeasurementServiceImpl(repository);
 
-        var provider = services.BuildServiceProvider();
-
-        var service = provider.GetRequiredService<IQuantityMeasurementService>();
-        var repository = provider.GetRequiredService<IQuantityMeasurementRepository>();
-
-        // Pass both service and repository to Menu
         IMenu menu = new Menu(service, repository);
+
         menu.Start();
     }
 }

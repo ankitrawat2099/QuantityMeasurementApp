@@ -1,7 +1,6 @@
 using System;
 using QuantityMeasurementBusinessLayer.Interfaces;
 using QuantityMeasurementModelLayer.DTO;
-using QuantityMeasurementModelLayer.Entities;
 using QuantityMeasurementRepositoryLayer.Interfaces;
 using QuantityMeasurementConsoleApp.Interfaces;
 
@@ -29,7 +28,7 @@ public class Menu : IMenu
                 Console.WriteLine("2 Volume");
                 Console.WriteLine("3 Weight");
                 Console.WriteLine("4 Temperature");
-                Console.WriteLine("5 Show Database Records");
+                Console.WriteLine("5 Show Records");
                 Console.WriteLine("6 Exit");
 
                 Console.Write("Enter choice: ");
@@ -52,11 +51,6 @@ public class Menu : IMenu
             }
         }
     }
-
-    // rest of your code stays same
-
-
-
 
     // -------- OPERATION MENU --------
     private void OperationMenu(int type)
@@ -209,12 +203,13 @@ public class Menu : IMenu
         Console.WriteLine($"\nResult = {result.Value} {result.Unit}");
     }
 
-    // -------- SHOW DATABASE RECORDS --------
+    // -------- SHOW DATABASE / CACHE RECORDS --------
     private void ShowAllData()
     {
         var list = repository.GetAll();
 
-        Console.WriteLine("\n===== DATABASE RECORDS =====");
+        Console.WriteLine("\n===== STORED RECORDS =====");
+
         foreach (var item in list)
         {
             Console.WriteLine(
@@ -226,6 +221,7 @@ public class Menu : IMenu
                 $"Type: {item.MeasurementType}"
             );
         }
-        Console.WriteLine("============================\n");
+
+        Console.WriteLine("==========================\n");
     }
 }
