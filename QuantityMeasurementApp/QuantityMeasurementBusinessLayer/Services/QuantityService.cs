@@ -74,6 +74,26 @@ public class QuantityService
         return new QuantityModel<U>(result, q1.Unit);
     }
 
+
+public QuantityModel<U> Add<U>(
+    QuantityModel<U> q1,
+    QuantityModel<U> q2,
+    U targetUnit)
+    where U : struct, Enum
+{
+    if (q1 == null || q2 == null)
+        throw new ArgumentException("Quantity cannot be null");
+
+    double base1 = ConvertToBaseUnit(q1);
+    double base2 = ConvertToBaseUnit(q2);
+
+    double resultBase = base1 + base2;
+
+    double result = ConvertFromBaseUnit(targetUnit, resultBase);
+
+    return new QuantityModel<U>(result, targetUnit);
+}
+
     public QuantityModel<U> Subtract<U>(QuantityModel<U> q1, QuantityModel<U> q2)
         where U : struct, Enum
     {
@@ -89,6 +109,29 @@ public class QuantityService
 
         return new QuantityModel<U>(result, q1.Unit);
     }
+
+
+
+public QuantityModel<U> Subtract<U>(
+    QuantityModel<U> q1,
+    QuantityModel<U> q2,
+    U targetUnit)
+    where U : struct, Enum
+{
+    if (q1 == null || q2 == null)
+        throw new ArgumentException("Quantity cannot be null");
+
+    double base1 = ConvertToBaseUnit(q1);
+    double base2 = ConvertToBaseUnit(q2);
+
+    double resultBase = base1 - base2;
+
+    double result = ConvertFromBaseUnit(targetUnit, resultBase);
+
+    return new QuantityModel<U>(result, targetUnit);
+}
+
+
 
     public double Divide<U>(QuantityModel<U> q1, QuantityModel<U> q2)
         where U : struct, Enum
