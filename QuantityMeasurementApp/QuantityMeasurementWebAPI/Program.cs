@@ -14,8 +14,6 @@ using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---------------------- Add Services ----------------------
-
 // Controllers
 builder.Services.AddControllers();
 
@@ -45,7 +43,7 @@ builder.Services.AddAuthentication(options =>
 // Authorization
 builder.Services.AddAuthorization();
 
-// Swagger + JWT support
+//swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -73,13 +71,15 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// ---------------------- Database ----------------------
+// database
 builder.Services.AddDbContext<QuantityMeasurementDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-// ---------------------- Dependency Injection ----------------------
-// Repositories
+//dependency injection
+
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<QuantityMeasurementEFRepository>();
 builder.Services.AddScoped<QuantityMeasurementCacheRepository>();
@@ -102,7 +102,6 @@ builder.Services.AddCors(options =>
 });
 
 
-// ---------------------- Build App ----------------------
 var app = builder.Build();
 app.UseCors("AllowReact");
 

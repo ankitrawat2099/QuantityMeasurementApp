@@ -14,7 +14,14 @@ namespace QuantityMeasurementModelLayer.Entities
 
         public double Result { get; set; }
 
+        public string ResultUnit { get; set; } = null!;
+
         public string MeasurementType { get; set; } = null!;
+
+        public int UserId { get; set; }
+        public UserEntity? User { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public QuantityMeasurementEntity() { }
 
@@ -25,7 +32,9 @@ namespace QuantityMeasurementModelLayer.Entities
             string secondUnit,
             string operation,
             double result,
-            string measurementType)
+            string resultUnit,
+            string measurementType,
+            int userId)
         {
             FirstValue = firstValue;
             FirstUnit = firstUnit;
@@ -33,7 +42,10 @@ namespace QuantityMeasurementModelLayer.Entities
             SecondUnit = secondUnit;
             Operation = operation;
             Result = result;
+            ResultUnit = resultUnit;
             MeasurementType = measurementType;
+            UserId = userId;
+            CreatedAt = DateTime.UtcNow;
         }
     }
 }
