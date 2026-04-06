@@ -15,11 +15,5 @@ public class SignupRequest
     public string Password { get; set; }
     public string Role { get; set; } = "user";
 
-    public SignupRequest(string name, string email, string password, string? role)
-    {
-        Name = name;
-        Email = email;
-        Password = password;
-        Role = role;
-    }
+   
 }
