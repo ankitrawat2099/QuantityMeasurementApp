@@ -75,24 +75,24 @@ public class QuantityService
     }
 
 
-public QuantityModel<U> Add<U>(
-    QuantityModel<U> q1,
-    QuantityModel<U> q2,
-    U targetUnit)
-    where U : struct, Enum
-{
-    if (q1 == null || q2 == null)
-        throw new ArgumentException("Quantity cannot be null");
+    public QuantityModel<U> Add<U>(
+        QuantityModel<U> q1,
+        QuantityModel<U> q2,
+        U targetUnit)
+        where U : struct, Enum
+    {
+        if (q1 == null || q2 == null)
+            throw new ArgumentException("Quantity cannot be null");
 
-    double base1 = ConvertToBaseUnit(q1);
-    double base2 = ConvertToBaseUnit(q2);
+        double base1 = ConvertToBaseUnit(q1);
+        double base2 = ConvertToBaseUnit(q2);
 
-    double resultBase = base1 + base2;
+        double resultBase = base1 + base2;
 
-    double result = ConvertFromBaseUnit(targetUnit, resultBase);
+        double result = ConvertFromBaseUnit(targetUnit, resultBase);
 
-    return new QuantityModel<U>(result, targetUnit);
-}
+        return new QuantityModel<U>(result, targetUnit);
+    }
 
     public QuantityModel<U> Subtract<U>(QuantityModel<U> q1, QuantityModel<U> q2)
         where U : struct, Enum
@@ -112,26 +112,24 @@ public QuantityModel<U> Add<U>(
 
 
 
-public QuantityModel<U> Subtract<U>(
-    QuantityModel<U> q1,
-    QuantityModel<U> q2,
-    U targetUnit)
-    where U : struct, Enum
-{
-    if (q1 == null || q2 == null)
-        throw new ArgumentException("Quantity cannot be null");
+    public QuantityModel<U> Subtract<U>(
+        QuantityModel<U> q1,
+        QuantityModel<U> q2,
+        U targetUnit)
+        where U : struct, Enum
+    {
+        if (q1 == null || q2 == null)
+            throw new ArgumentException("Quantity cannot be null");
 
-    double base1 = ConvertToBaseUnit(q1);
-    double base2 = ConvertToBaseUnit(q2);
+        double base1 = ConvertToBaseUnit(q1);
+        double base2 = ConvertToBaseUnit(q2);
 
-    double resultBase = base1 - base2;
+        double resultBase = base1 - base2;
 
-    double result = ConvertFromBaseUnit(targetUnit, resultBase);
+        double result = ConvertFromBaseUnit(targetUnit, resultBase);
 
-    return new QuantityModel<U>(result, targetUnit);
-}
-
-
+        return new QuantityModel<U>(result, targetUnit);
+    }
 
     public double Divide<U>(QuantityModel<U> q1, QuantityModel<U> q2)
         where U : struct, Enum

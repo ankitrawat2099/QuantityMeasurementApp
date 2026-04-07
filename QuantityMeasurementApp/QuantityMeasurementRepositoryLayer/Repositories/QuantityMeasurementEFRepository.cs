@@ -10,8 +10,7 @@ namespace QuantityMeasurementRepositoryLayer.Repository
         private readonly QuantityMeasurementDbContext _context;
 
         public QuantityMeasurementEFRepository(
-            QuantityMeasurementDbContext context, 
-            QuantityMeasurementCacheRepository cacheRepository)
+            QuantityMeasurementDbContext context)
         {
             _context = context;
         }
@@ -20,7 +19,7 @@ namespace QuantityMeasurementRepositoryLayer.Repository
             public void SaveOperation(QuantityMeasurementEntity entity)
 {
     _context.QuantityMeasurements.Add(entity);
-    _context.SaveChanges(); // let it throw exception
+    _context.SaveChanges();
 }
         public List<QuantityMeasurementEntity> GetAll()
         {

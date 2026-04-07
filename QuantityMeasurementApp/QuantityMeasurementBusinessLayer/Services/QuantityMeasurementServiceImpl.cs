@@ -5,8 +5,7 @@ using QuantityMeasurementRepositoryLayer.Repository;
 using QuantityMeasurementModelLayer.Enums;
 using QuantityMeasurementModelLayer.Models;
 using QuantityMeasurementModelLayer.Exceptions;
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 
 namespace QuantityMeasurementBusinessLayer.Services
 {
@@ -16,75 +15,86 @@ namespace QuantityMeasurementBusinessLayer.Services
         private readonly QuantityMeasurementCacheRepository _cacheRepository;
         private readonly QuantityService _quantityService;
 
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         public QuantityMeasurementServiceImpl(
             QuantityMeasurementEFRepository dbRepository,
-            QuantityMeasurementCacheRepository cacheRepository)
+            QuantityMeasurementCacheRepository cacheRepository,
+            IHttpContextAccessor httpContextAccessor)
         {
             _dbRepository = dbRepository;
             _cacheRepository = cacheRepository;
             _quantityService = new QuantityService();
+            _httpContextAccessor = httpContextAccessor;
+        }
+        private int GetUserId()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?
+                .User.FindFirst("userId")?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new Exception("User ID not found in token");
+
+            return int.Parse(userIdClaim);
         }
 
         private void ClearCache()
         {
-            _cacheRepository.ClearCache();
+            var userId = GetUserId();
+            _cacheRepository.ClearCache(userId);
         }
 
-       private void SaveOperation(QuantityMeasurementEntity entity)
-{
-    try
-    {
-        _dbRepository.SaveOperation(entity);
-        ClearCache();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"DB FAILED - ADDING TO QUEUE: {ex.Message}");
-        _cacheRepository.AddToQueue(entity);
-    }
-}
-
-        // ---------------------- New Background Sync Method ----------------------
-       
-       
-public void SyncQueueToDatabase()
-{
-    var queuedEntities = _cacheRepository.GetQueue();
-
-    if (queuedEntities.Count == 0)
-    {
-        Console.WriteLine("QUEUE EMPTY");
-        return;
-    }
-
-    Console.WriteLine($"SYNC STARTED: {queuedEntities.Count}");
-
-    foreach (var entity in queuedEntities)
-    {
-        try
+        private void SaveOperation(QuantityMeasurementEntity entity)
         {
-            _dbRepository.SaveOperation(entity);
-            Console.WriteLine($"SYNCED ID: {entity.Id}");
+            try
+            {
+                _dbRepository.SaveOperation(entity);
+                ClearCache();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"DB FAILED - ADDING TO QUEUE: {ex.Message}");
+                _cacheRepository.AddToQueue(entity);
+            }
         }
-        catch (Exception ex)
+
+        public void SyncQueueToDatabase()
         {
-            Console.WriteLine($"DB STILL OFFLINE: {ex.Message}");
-            return; // ❗ STOP IMMEDIATELY
+            var queuedEntities = _cacheRepository.GetQueue();
+
+            if (queuedEntities.Count == 0)
+            {
+                Console.WriteLine("QUEUE EMPTY");
+                return;
+            }
+
+            Console.WriteLine($"SYNC STARTED: {queuedEntities.Count}");
+
+            foreach (var entity in queuedEntities)
+            {
+                try
+                {
+                    _dbRepository.SaveOperation(entity);
+                    Console.WriteLine($"SYNCED ID: {entity.Id}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"DB STILL OFFLINE: {ex.Message}");
+                    return;
+                }
+            }
+
+            _cacheRepository.ClearQueue();
+            _cacheRepository.ClearCache(GetUserId());
         }
-    }
 
-    // ✅ ONLY REACH HERE IF ALL SUCCESS
-    _cacheRepository.ClearQueue();
-    _cacheRepository.ClearCache();
-}
-
-        // ---------------------- Existing Methods ----------------------
         public double CompareQuantities(QuantityDTO thisQuantity, QuantityDTO thatQuantity)
         {
             if (thisQuantity.MeasurementType != thatQuantity.MeasurementType)
                 throw new Exception("Cannot compare different measurement types");
 
             bool result;
+            string resultUnit = thisQuantity.Unit;
 
             switch (thisQuantity.MeasurementType.ToUpper())
             {
@@ -128,7 +138,9 @@ public void SyncQueueToDatabase()
                 thatQuantity.Unit,
                 "COMPARE",
                 compareResult,
-                thisQuantity.MeasurementType));
+                resultUnit,
+                thisQuantity.MeasurementType,
+                GetUserId()));
 
             return compareResult;
         }
@@ -175,7 +187,10 @@ public void SyncQueueToDatabase()
                 thatQuantity.Unit,
                 "ADD",
                 result,
-                thisQuantity.MeasurementType);
+                resultUnit,
+                thisQuantity.MeasurementType,
+                GetUserId());
+
 
             SaveOperation(entity);
 
@@ -184,7 +199,7 @@ public void SyncQueueToDatabase()
 
 
 
- public QuantityDTO SubtractQuantities(QuantityDTO thisQuantity, QuantityDTO thatQuantity)
+        public QuantityDTO SubtractQuantities(QuantityDTO thisQuantity, QuantityDTO thatQuantity)
         {
             if (thisQuantity.MeasurementType != thatQuantity.MeasurementType)
                 throw new Exception("Cannot perform operation on different measurement types");
@@ -226,7 +241,9 @@ public void SyncQueueToDatabase()
                 thatQuantity.Unit,
                 "SUBTRACT",
                 result,
-                thisQuantity.MeasurementType);
+                resultUnit,
+                thisQuantity.MeasurementType,
+                GetUserId());
 
             SaveOperation(entity);
 
@@ -239,6 +256,7 @@ public void SyncQueueToDatabase()
                 throw new Exception("Cannot perform operation on different measurement types");
 
             double result;
+            string resultUnit = thisQuantity.Unit;
 
             switch (thisQuantity.MeasurementType.ToUpper())
             {
@@ -274,16 +292,16 @@ public void SyncQueueToDatabase()
                 thatQuantity.Unit,
                 "DIVIDE",
                 result,
-                thisQuantity.MeasurementType);
+                resultUnit,
+                thisQuantity.MeasurementType,
+                GetUserId());
 
             SaveOperation(entity);
 
             return new QuantityDTO(result, thisQuantity.Unit, thisQuantity.MeasurementType);
         }
 
-
-
-         public QuantityDTO ConvertQuantity(QuantityDTO quantity, string targetUnit)
+        public QuantityDTO ConvertQuantity(QuantityDTO quantity, string targetUnit)
         {
             double result;
 
@@ -317,6 +335,8 @@ public void SyncQueueToDatabase()
                     throw new Exception("Unsupported measurement type");
             }
 
+
+
             var entity = new QuantityMeasurementEntity(
                 quantity.Value,
                 quantity.Unit,
@@ -324,7 +344,9 @@ public void SyncQueueToDatabase()
                 targetUnit,
                 "CONVERT",
                 result,
-                quantity.MeasurementType
+                 targetUnit,
+                quantity.MeasurementType,
+                GetUserId()
             );
 
             SaveOperation(entity);
@@ -332,28 +354,36 @@ public void SyncQueueToDatabase()
             return new QuantityDTO(result, targetUnit, quantity.MeasurementType);
         }
 
-
-        // ---------------------- Cache-aware reads ----------------------
         public List<QuantityMeasurementEntity> GetErroredOperations()
+
         {
-            var allData = _cacheRepository.GetCachedData() ?? _dbRepository.GetAll();
+            var userId = GetUserId();
+            var allData = _cacheRepository.GetCachedData(userId) ?? _dbRepository.GetAll();
             return allData.FindAll(e => e.Operation.Contains("ERROR"));
         }
 
         public int GetOperationCount(string operationType)
         {
-            var allData = _cacheRepository.GetCachedData() ?? _dbRepository.GetAll();
+            var userId = GetUserId();
+            var allData = _cacheRepository.GetCachedData(userId) ?? _dbRepository.GetAll();
             return allData.FindAll(e => e.Operation == operationType).Count;
         }
 
         public (List<QuantityMeasurementEntity> data, string source) GetAllOperationsWithSource()
         {
-            var cachedData = _cacheRepository.GetCachedData();
+            var userId = GetUserId();
+
+            var cachedData = _cacheRepository.GetCachedData(userId);
             if (cachedData != null)
                 return (cachedData, "REDIS CACHE");
 
-            var data = _dbRepository.GetAll();
-            _cacheRepository.SetCache(data);
+            var data = _dbRepository
+                .GetAll()
+                .Where(x => x.UserId == userId)
+                .ToList();
+
+            _cacheRepository.SetCache(userId, data);
+
             return (data, "DATABASE");
         }
     }

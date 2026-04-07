@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using QuantityMeasurementBusinessLayer.Interfaces;
 using QuantityMeasurementModelLayer.DTO;
 using QuantityMeasurementModelLayer.Exceptions;
+using QuantityMeasurementModelLayer.DTO;
 
 namespace QuantityMeasurementWebAPI.Controllers
 {
-    [Authorize(Roles ="Admin,User")]
+    [Authorize(Roles ="admin,user")]
     [ApiController]
     [Route("api/v1/quantities")]
     public class QuantityMeasurementController : ControllerBase
@@ -103,7 +104,7 @@ namespace QuantityMeasurementWebAPI.Controllers
         [HttpGet("history/all")]
         public IActionResult GetAllOperations()
         {
-            var dataWithSource = _service.GetAllOperationsWithSource(); // Returns (List<QuantityMeasurementEntity>, string source)
+            var dataWithSource = _service.GetAllOperationsWithSource();
             
             return Ok(new 
             { 
@@ -128,19 +129,5 @@ namespace QuantityMeasurementWebAPI.Controllers
             return Ok(new { operationType, count });
         }
     }
-
-    // Request DTO wrappers for clarity in Swagger UI
-    public class OperationRequestDTO
-    {
-        public QuantityDTO ThisQuantityDTO { get; set; } = null!;
-        public QuantityDTO ThatQuantityDTO { get; set; } = null!;
-    }
-
-    public class CompareRequestDTO : OperationRequestDTO { }
-
-    public class ConvertRequestDTO
-    {
-        public QuantityDTO QuantityDTO { get; set; } = null!;
-        public string TargetUnit { get; set; } = null!;
-    }
 }
+   

@@ -11,6 +11,6 @@ public class QuantityMeasurementDbContext : DbContext
     }
 
     public DbSet<QuantityMeasurementEntity> QuantityMeasurements { get; set; }
-     public DbSet<UserEntity> Users { get; set; }
+    public DbSet<UserEntity> Users { get; set; }
 
 }
