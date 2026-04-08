@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -15,12 +16,12 @@ namespace QuantityMeasurementRepositoryLayer.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,18 +32,18 @@ namespace QuantityMeasurementRepositoryLayer.Migrations
                 name: "QuantityMeasurements",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstValue = table.Column<double>(type: "float", nullable: false),
-                    FirstUnit = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SecondValue = table.Column<double>(type: "float", nullable: false),
-                    SecondUnit = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Operation = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Result = table.Column<double>(type: "float", nullable: false),
-                    ResultUnit = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MeasurementType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstValue = table.Column<double>(type: "double precision", nullable: false),
+                    FirstUnit = table.Column<string>(type: "text", nullable: false),
+                    SecondValue = table.Column<double>(type: "double precision", nullable: false),
+                    SecondUnit = table.Column<string>(type: "text", nullable: false),
+                    Operation = table.Column<string>(type: "text", nullable: false),
+                    Result = table.Column<double>(type: "double precision", nullable: false),
+                    ResultUnit = table.Column<string>(type: "text", nullable: false),
+                    MeasurementType = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {

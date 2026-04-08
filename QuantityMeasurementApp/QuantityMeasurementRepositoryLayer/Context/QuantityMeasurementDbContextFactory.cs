@@ -18,7 +18,7 @@ namespace QuantityMeasurementRepositoryLayer.Context
             var optionsBuilder = new DbContextOptionsBuilder<QuantityMeasurementDbContext>();
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseNpgsql(connectionString);
 
             return new QuantityMeasurementDbContext(optionsBuilder.Options);
         }

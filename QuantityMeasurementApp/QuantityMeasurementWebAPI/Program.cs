@@ -17,6 +17,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers
 builder.Services.AddControllers();
 
+//jwt configuration
+
+var jwtKey = builder.Configuration["Jwt:Key"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? Environment.GetEnvironmentVariable("JWT_AUDIENCE");
+
 // JWT Authentication
 builder.Services.AddAuthentication(options =>
 {
@@ -32,10 +38,10 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
           RoleClaimType = ClaimTypes.Role,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            Encoding.UTF8.GetBytes(jwtKey!)
         )
     };
 });
@@ -71,9 +77,12 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+//connection string
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                       ?? Environment.GetEnvironmentVariable("DEFAULT_CONNECTION");
 // database
 builder.Services.AddDbContext<QuantityMeasurementDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(connectionString)
 );
 
 //dependency injection
@@ -92,7 +101,8 @@ builder.Services.AddHostedService<RedisSyncBackgroundService>();
 // Redis cache
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = "localhost:6379";
+     options.Configuration = builder.Configuration["Redis:Connection"] 
+                            ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION");
     options.InstanceName = "QuantityMeasurement_";
 });
 //allow cors 
@@ -102,7 +112,13 @@ builder.Services.AddCors(options =>
 });
 
 
+
+
+//ports
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+
 var app = builder.Build();
+app.Urls.Add($"http://*:{port}");
 app.UseCors("AllowReact");
 
 // Middleware
