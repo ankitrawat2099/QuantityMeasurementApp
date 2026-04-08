@@ -2,13 +2,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /app
 
-# Copy the entire solution relative to Docker build context
-COPY ../ ./
+# Copy entire solution from root
+COPY ./ ./    
 
-# Restore all dependencies for the Web API project
+# Restore dependencies for the WebAPI project
 RUN dotnet restore QuantityMeasurementWebAPI/QuantityMeasurementWebAPI.csproj
 
-# Publish the Web API project
+# Publish the WebAPI project
 RUN dotnet publish QuantityMeasurementWebAPI/QuantityMeasurementWebAPI.csproj -c Release -o out
 
 # Stage 2: Runtime
@@ -22,5 +22,5 @@ COPY --from=build /app/QuantityMeasurementWebAPI/out ./
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://+:5000
 
-# Run the API
+# Run the WebAPI
 ENTRYPOINT ["dotnet", "QuantityMeasurementWebAPI.dll"]
